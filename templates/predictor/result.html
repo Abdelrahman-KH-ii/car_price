@@ -1,0 +1,150 @@
+{% extends 'base.html' %}
+{% block title %}Result — CarValue{% endblock %}
+{% block extra_head %}
+<style>
+  .result-page {
+    min-height: calc(100vh - 62px);
+    display: flex; align-items: center; justify-content: center;
+    padding: 3rem 1.5rem; background: var(--bg2);
+  }
+  .result-wrap { width: 100%; max-width: 580px; }
+  .result-card {
+    background: #fff; border: 1px solid var(--border);
+    border-radius: 16px; padding: 2.8rem 2.5rem; text-align: center;
+    box-shadow: var(--shadow-lg);
+    position: relative; overflow: hidden;
+  }
+  .result-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px;
+    background: linear-gradient(90deg, #c9960d, #e8c050, #c9960d);
+  }
+  .result-badge {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    padding: 0.3rem 0.85rem; border-radius: 100px;
+    background: var(--gold-light); border: 1px solid var(--gold-border);
+    font-size: 0.73rem; font-weight: 600; color: var(--gold-btn);
+    text-transform: uppercase; letter-spacing: 0.09em;
+    margin-bottom: 1.4rem;
+  }
+  .result-car {
+    font-family: 'Syne', sans-serif; font-size: 1.7rem; font-weight: 800;
+    margin-bottom: 0.3rem; line-height: 1.2;
+  }
+  .result-meta { color: var(--text-muted); font-size: 0.87rem; margin-bottom: 2rem; }
+
+  .price-block {
+    background: var(--bg2); border-radius: 14px; padding: 2rem 1.5rem;
+    margin-bottom: 1.6rem; border: 1px solid var(--border);
+  }
+  .price-prefix {
+    font-size: 0.75rem; font-weight: 700; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.8rem;
+  }
+  .price-value {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(4rem, 12vw, 6rem);
+    font-weight: 800;
+    color: var(--gold-btn); line-height: 1;
+    animation: popIn 0.6s cubic-bezier(0.34,1.56,0.64,1) both;
+    letter-spacing: -0.02em;
+  }
+  .price-rupee { font-size: 0.55em; vertical-align: super; margin-right: 0.05em; }
+  .price-unit { font-size: 0.88rem; color: var(--text-muted); margin-top: 0.6rem; font-weight: 500; }
+  .price-usd {
+    display: inline-block;
+    margin-top: 0.6rem;
+    padding: 0.3rem 0.9rem;
+    background: var(--gold-light);
+    border: 1px solid var(--gold-border);
+    border-radius: 100px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--gold-btn);
+  }
+  @keyframes popIn { from{opacity:0;transform:scale(0.5)} to{opacity:1;transform:scale(1)} }
+
+  .confidence-wrap { text-align: left; margin-bottom: 1.8rem; }
+  .confidence-top {
+    display: flex; justify-content: space-between;
+    font-size: 0.78rem; color: var(--text-muted); margin-bottom: 0.45rem; font-weight: 600;
+  }
+  .confidence-pct { color: var(--gold-btn); font-weight: 700; }
+  .confidence-bar { background: var(--bg2); border-radius: 100px; height: 6px; overflow: hidden; border: 1px solid var(--border); }
+  .confidence-fill {
+    height: 100%; border-radius: 100px;
+    background: linear-gradient(90deg, var(--gold-btn), #e8c050);
+    animation: growBar 1s ease 0.4s both;
+    width: {{ confidence }}%;
+  }
+  @keyframes growBar { from{width:0} }
+
+  .details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 2rem; text-align: left; }
+  .detail-item { background: var(--bg2); border-radius: 10px; padding: 0.85rem 1rem; border: 1px solid var(--border); }
+  .detail-key { font-size: 0.7rem; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.09em; margin-bottom: 0.25rem; font-weight: 700; }
+  .detail-val { font-size: 0.92rem; font-weight: 600; color: var(--text); }
+
+  .result-actions { display: flex; gap: 0.85rem; justify-content: center; }
+  .btn-again {
+    padding: 0.8rem 1.8rem; background: var(--gold-btn); color: #fff;
+    border: none; border-radius: 8px; font-family: 'Syne', sans-serif;
+    font-weight: 700; font-size: 0.9rem; cursor: pointer;
+    text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem;
+    transition: all 0.18s; box-shadow: 0 2px 10px rgba(180,120,0,0.22);
+  }
+  .btn-again:hover { background: var(--gold-hover); transform: translateY(-1px); }
+  .btn-home {
+    padding: 0.8rem 1.8rem; background: #fff; color: var(--text-muted);
+    border: 1.5px solid var(--border); border-radius: 8px;
+    font-family: 'DM Sans', sans-serif; font-size: 0.9rem; font-weight: 500;
+    text-decoration: none; display: inline-flex; align-items: center;
+    transition: all 0.18s;
+  }
+  .btn-home:hover { border-color: var(--border2); color: var(--text); }
+
+  @media (max-width: 480px) {
+    .result-card { padding: 2rem 1.5rem; }
+    .price-value { font-size: 4.5rem; }
+  }
+</style>
+{% endblock %}
+{% block content %}
+<div class="result-page">
+  <div class="result-wrap">
+    <div class="result-card">
+      <div class="result-badge">Estimated Market Value</div>
+      <div class="result-car">{{ brand }} {{ model }}</div>
+      <div class="result-meta">{{ year }} &nbsp;·&nbsp; {{ location }} &nbsp;·&nbsp; {{ fuel }} &nbsp;·&nbsp; {{ transmission }}</div>
+
+      <div class="price-block">
+        <div class="price-prefix">Predicted Price</div>
+        <div class="price-value"><span class="price-rupee">₹</span>{{ price }}</div>
+        <div class="price-unit">Indian Rupees (Lakh)</div>
+        <div class="price-usd">≈ ${{ price_usd }} USD</div>
+      </div>
+
+      <div class="confidence-wrap">
+        <div class="confidence-top">
+          <span>Model Confidence</span>
+          <span class="confidence-pct">{{ confidence }}%</span>
+        </div>
+        <div class="confidence-bar"><div class="confidence-fill"></div></div>
+      </div>
+
+      <div class="details-grid">
+        <div class="detail-item"><div class="detail-key">Owner</div><div class="detail-val">{{ owner }}</div></div>
+        <div class="detail-item"><div class="detail-key">Kilometers</div><div class="detail-val">{{ km }} km</div></div>
+        <div class="detail-item"><div class="detail-key">Fuel</div><div class="detail-val">{{ fuel }}</div></div>
+        <div class="detail-item"><div class="detail-key">Transmission</div><div class="detail-val">{{ transmission }}</div></div>
+      </div>
+
+      <div class="result-actions">
+        <a href="/predict/" class="btn-again">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 4v6h6M23 20v-6h-6"/><path d="M20.49 9A9 9 0 005.64 5.64L1 10M23 14l-4.64 4.36A9 9 0 013.51 15"/></svg>
+          Predict Again
+        </a>
+        <a href="/" class="btn-home">Home</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

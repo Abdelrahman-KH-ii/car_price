@@ -1,0 +1,17 @@
+# ── LOCAL DEV  (sqlite, no nginx) ─────────────────────────────────────────────
+# Usage: docker compose up
+
+services:
+  web:
+    build: .
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      - DB_ENGINE=sqlite

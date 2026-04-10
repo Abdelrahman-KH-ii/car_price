@@ -1,0 +1,208 @@
+{% extends 'base.html' %}
+{% block title %}Predict — CarValue{% endblock %}
+{% block extra_head %}
+<style>
+  .predict-page { max-width: 860px; margin: 0 auto; padding: 2.5rem 1.5rem 4rem; }
+  .page-header { margin-bottom: 1.8rem; }
+  .page-header h1 { font-family: 'Syne', sans-serif; font-size: 1.75rem; font-weight: 800; margin-bottom: 0.25rem; }
+  .page-header p { color: var(--text-muted); font-size: 0.9rem; }
+
+  .welcome-banner {
+    display: flex; align-items: center; gap: 0.75rem;
+    padding: 0.7rem 1.1rem; border-radius: 10px;
+    background: var(--gold-light); border: 1px solid var(--gold-border);
+    margin-bottom: 1.8rem; font-size: 0.88rem;
+  }
+  .welcome-banner .avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: var(--gold-btn); display: flex; align-items: center; justify-content: center;
+    font-family: 'Syne', sans-serif; font-weight: 800; font-size: 0.82rem; color: #fff;
+    flex-shrink: 0;
+  }
+  .welcome-banner span { color: var(--text-muted); }
+  .welcome-banner strong { color: var(--gold-btn); }
+
+  .form-card {
+    background: #fff; border: 1px solid var(--border);
+    border-radius: 14px; padding: 2rem;
+    box-shadow: var(--shadow);
+  }
+  .section-label {
+    font-size: 0.72rem; font-weight: 700; color: var(--gold-btn);
+    text-transform: uppercase; letter-spacing: 0.12em;
+    margin-bottom: 1.1rem; padding-bottom: 0.55rem;
+    border-bottom: 1.5px solid var(--border);
+  }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.1rem; margin-bottom: 1.8rem; }
+  .form-grid.three { grid-template-columns: 1fr 1fr 1fr; }
+  .field { display: flex; flex-direction: column; gap: 0.35rem; }
+  label { font-size: 0.79rem; font-weight: 600; color: var(--text); }
+  select, input[type=number] {
+    background: #fff; border: 1.5px solid var(--border); border-radius: 8px;
+    padding: 0.68rem 0.9rem; color: var(--text);
+    font-family: 'DM Sans', sans-serif; font-size: 0.92rem;
+    outline: none; transition: border-color 0.18s, box-shadow 0.18s; width: 100%;
+    appearance: none; -webkit-appearance: none;
+  }
+  select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 24 24' fill='none' stroke='%236b6b80' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 0.85rem center; padding-right: 2.4rem; }
+  select:focus, input[type=number]:focus { border-color: var(--gold-border); box-shadow: 0 0 0 3px rgba(201,150,13,0.1); }
+  select option { background: #fff; color: var(--text); }
+  input[type=number]::placeholder { color: var(--text-light); }
+
+  .submit-row { display: flex; justify-content: flex-end; margin-top: 0.5rem; }
+  .submit-btn {
+    padding: 0.82rem 2.2rem; background: var(--gold-btn); color: #fff;
+    border: none; border-radius: 8px; font-family: 'Syne', sans-serif;
+    font-weight: 700; font-size: 0.93rem; cursor: pointer;
+    transition: all 0.18s; display: flex; align-items: center; gap: 0.5rem;
+    box-shadow: 0 2px 10px rgba(180,120,0,0.25);
+  }
+  .submit-btn:hover { background: var(--gold-hover); box-shadow: 0 4px 16px rgba(180,120,0,0.35); transform: translateY(-1px); }
+  .submit-btn svg { width: 17px; height: 17px; }
+  .error-banner {
+    padding: 0.8rem 1.1rem; background: #fff5f5;
+    border: 1px solid #fcc; border-radius: 8px; color: var(--red);
+    font-size: 0.87rem; margin-bottom: 1.4rem;
+  }
+  @media (max-width: 600px) { .form-grid, .form-grid.three { grid-template-columns: 1fr; } }
+</style>
+{% endblock %}
+{% block content %}
+<div class="predict-page">
+  <div class="welcome-banner">
+    <div class="avatar">{{ user.username|first|upper }}</div>
+    <div><span>Welcome back, </span><strong>{{ user.username }}</strong><span> — let's find your car's value.</span></div>
+  </div>
+
+  <div class="page-header">
+    <h1>Car Value Predictor</h1>
+    <p>Select your car details below and get an instant price estimate.</p>
+  </div>
+
+  {% if error %}<div class="error-banner">{{ error }}</div>{% endif %}
+
+  <div class="form-card">
+    <form method="post" action="/predict/result/">
+      {% csrf_token %}
+
+      <div class="section-label">Car Identity</div>
+      <div class="form-grid">
+        <div class="field">
+          <label>Brand</label>
+          <select name="brand" id="brand-select" required>
+            <option value="">Select brand…</option>
+            {% for b in brands %}<option value="{{ b }}">{{ b }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="field">
+          <label>Model</label>
+          <select name="model" id="model-select" required>
+            <option value="">Select brand first…</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Year</label>
+          <select name="year" required>
+            {% for y in years %}<option value="{{ y }}">{{ y }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="field">
+          <label>Location</label>
+          <select name="location" required>
+            {% for loc in locations %}<option value="{{ loc }}">{{ loc }}</option>{% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <div class="section-label">Usage & Ownership</div>
+      <div class="form-grid three">
+        <div class="field">
+          <label>Kilometers Driven</label>
+          <input type="number" name="kilometers_driven" placeholder="e.g. 45000" min="0" max="1000000" required>
+        </div>
+        <div class="field">
+          <label>Fuel Type</label>
+          <select name="fuel_type" required>
+            {% for f in fuel_types %}<option value="{{ f }}">{{ f }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="field">
+          <label>Transmission</label>
+          <select name="transmission" required>
+            {% for t in transmissions %}<option value="{{ t }}">{{ t }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="field">
+          <label>Owner Type</label>
+          <select name="owner_type" required>
+            {% for o in owner_types %}<option value="{{ o }}">{{ o }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="field">
+          <label>Seats</label>
+          <select name="seats" required>
+            {% for s in seats %}<option value="{{ s }}" {% if s == 5 %}selected{% endif %}>{{ s }}</option>{% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <div class="section-label">Technical Specs <span style="font-weight:400;color:var(--text-light);font-size:0.68rem;letter-spacing:0">(auto-filled when you select a model)</span></div>
+      <div class="form-grid three">
+        <div class="field">
+          <label>Mileage (km/l)</label>
+          <input type="number" name="mileage" id="mileage" step="0.1" placeholder="e.g. 18.5" min="0" max="50" required>
+        </div>
+        <div class="field">
+          <label>Engine (cc)</label>
+          <input type="number" name="engine" id="engine" step="0.1" placeholder="e.g. 1500" min="0" max="8000" required>
+        </div>
+        <div class="field">
+          <label>Power (bhp)</label>
+          <input type="number" name="power" id="power" step="0.1" placeholder="e.g. 120" min="0" max="700" required>
+        </div>
+      </div>
+
+      <div class="submit-row">
+        <button type="submit" class="submit-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          Predict Price
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+{% block extra_scripts %}
+<script>
+const BRAND_MODELS = {{ brand_models_json|safe }};
+const AVG_STATS = {{ avg_stats_json|safe }};
+const brandSelect = document.getElementById('brand-select');
+const modelSelect = document.getElementById('model-select');
+const mileageInput = document.getElementById('mileage');
+const engineInput = document.getElementById('engine');
+const powerInput = document.getElementById('power');
+
+brandSelect.addEventListener('change', function() {
+  const brand = this.value;
+  modelSelect.innerHTML = '<option value="">Select model…</option>';
+  if (brand && BRAND_MODELS[brand]) {
+    BRAND_MODELS[brand].forEach(m => {
+      const opt = document.createElement('option');
+      opt.value = m; opt.textContent = m;
+      modelSelect.appendChild(opt);
+    });
+  }
+  mileageInput.value = ''; engineInput.value = ''; powerInput.value = '';
+});
+
+modelSelect.addEventListener('change', function() {
+  const brand = brandSelect.value;
+  const model = this.value;
+  if (!brand || !model) return;
+  const key = `('${brand}', '${model}')`;
+  if (AVG_STATS.Mileage[key]) mileageInput.value = AVG_STATS.Mileage[key];
+  if (AVG_STATS.Engine[key]) engineInput.value = AVG_STATS.Engine[key];
+  if (AVG_STATS.Power[key]) powerInput.value = AVG_STATS.Power[key];
+});
+</script>
+{% endblock %}

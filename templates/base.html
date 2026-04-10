@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}Car Value Predictor{% endblock %}</title>
+{% load static %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #ffffff;
+    --bg2: #f7f7f9;
+    --surface: #ffffff;
+    --surface2: #f2f2f5;
+    --border: #e4e4ea;
+    --border2: #d0d0da;
+    --gold: #b8860b;
+    --gold-btn: #c9960d;
+    --gold-hover: #a67509;
+    --gold-light: #fdf3dc;
+    --gold-border: #e0b84a;
+    --text: #111118;
+    --text-muted: #6b6b80;
+    --text-light: #9898aa;
+    --red: #c0392b;
+    --green: #1a7a4a;
+    --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.04);
+    --shadow-lg: 0 4px 24px rgba(0,0,0,0.1);
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 2.5rem; height: 62px;
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    box-shadow: 0 1px 0 var(--border);
+  }
+  .nav-logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800; font-size: 1.15rem;
+    color: var(--text);
+    text-decoration: none;
+    letter-spacing: -0.01em;
+  }
+  .nav-logo span { color: var(--gold-btn); }
+  .nav-right { display: flex; align-items: center; gap: 0.75rem; }
+  .nav-user {
+    display: flex; align-items: center; gap: 0.6rem;
+    font-size: 0.88rem; color: var(--text-muted);
+  }
+  .nav-user strong { color: var(--text); font-weight: 500; }
+  .nav-user .avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: var(--gold-light);
+    border: 1.5px solid var(--gold-border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.78rem; font-weight: 700; color: var(--gold-btn);
+    font-family: 'Syne', sans-serif;
+  }
+  .btn {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    padding: 0.5rem 1.15rem; border-radius: 7px;
+    font-size: 0.87rem; font-weight: 500; cursor: pointer;
+    border: none; text-decoration: none;
+    transition: all 0.18s; font-family: 'DM Sans', sans-serif;
+  }
+  .btn-ghost {
+    background: transparent; color: var(--text-muted);
+    border: 1px solid var(--border2);
+  }
+  .btn-ghost:hover { color: var(--text); border-color: var(--border2); background: var(--bg2); }
+  .btn-gold {
+    background: var(--gold-btn); color: #fff; font-weight: 600;
+    box-shadow: 0 1px 3px rgba(180,120,0,0.25);
+  }
+  .btn-gold:hover { background: var(--gold-hover); }
+  main { padding-top: 62px; min-height: 100vh; }
+  .messages { position: fixed; top: 76px; right: 1.5rem; z-index: 200; display: flex; flex-direction: column; gap: 0.5rem; }
+  .msg { padding: 0.7rem 1.1rem; border-radius: 8px; font-size: 0.85rem; font-weight: 500; animation: slideIn 0.25s ease; box-shadow: var(--shadow); }
+  .msg-error { background: #fff5f5; border: 1px solid #fcc; color: var(--red); }
+  .msg-success { background: #f0fff8; border: 1px solid #a0e6c0; color: var(--green); }
+  @keyframes slideIn { from { transform: translateX(80px); opacity:0; } to { transform: translateX(0); opacity:1; } }
+</style>
+{% block extra_head %}{% endblock %}
+</head>
+<body>
+<nav>
+  <a class="nav-logo" href="/">Car<span>Value</span></a>
+  <div class="nav-right">
+    {% if user.is_authenticated %}
+      <div class="nav-user">
+        <div class="avatar">{{ user.username|first|upper }}</div>
+        <strong>{{ user.username }}</strong>
+      </div>
+      <a href="/accounts/logout/" class="btn btn-ghost">Logout</a>
+    {% else %}
+      <a href="/accounts/login/" class="btn btn-ghost">Login</a>
+      <a href="/accounts/register/" class="btn btn-gold">Register</a>
+    {% endif %}
+  </div>
+</nav>
+
+{% if messages %}
+<div class="messages">
+  {% for msg in messages %}
+    <div class="msg {% if msg.tags == 'error' %}msg-error{% else %}msg-success{% endif %}">{{ msg }}</div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<main>{% block content %}{% endblock %}</main>
+<script>setTimeout(() => { document.querySelectorAll('.msg').forEach(m => m.remove()); }, 4000);</script>
+{% block extra_scripts %}{% endblock %}
+</body>
+</html>
